@@ -2,7 +2,9 @@
     // session in php is a way to store information  in variables to be used across multiple pages. Unlike cookie the information is not stored on the computer
     session_start();
     if(!isset($_SESSION["user"])){
+        // be carefull with the space  this is correct Location: login.php
         header("Location: login.php");
+        exit;
     }
 ?>
 
