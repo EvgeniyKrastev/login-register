@@ -26,6 +26,7 @@
             $email = $_POST["email"];
             $password = $_POST["password"];
             $passwordRepeat = $_POST["repeat_password"];
+            $phone = $_POST["phone"] ?? ""; // ако искаш телефонен номер
 
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -35,16 +36,36 @@
                 array_push($errors, "All fields are riquired");
             }
 
+            // Име: само латински букви (малки и големи), дължина 5–15 символа
+            if(!preg_match("/^[A-Za-z]{5,35}$/", $fullName)){
+                array_push($errors, "Full name must be 5–35 characters long and contain only Latin letters (A–Z, a–z).");
+            }
+
+            //Email
             if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
                 array_push($errors,"Email is not valid");
             }
 
-             if(strlen($password)<8){
-                array_push($errors,"Password must be atleast 8 characters!");
+            if(strlen($password) < 8){
+                array_push($errors,"Password must be at least 8 characters!");
+            }
+            if(!preg_match("/[a-z]/", $password)){
+                array_push($errors,"Password must contain at least one lowercase letter!");
+            }
+            if(!preg_match("/[A-Z]/", $password)){
+                array_push($errors,"Password must contain at least one uppercase letter!");
+            }
+            if(!preg_match("/[@\-\_~]/", $password)){
+                array_push($errors,"Password must contain at least one special character (@ - _ ~)!");
             }
 
             if($password!==$passwordRepeat){
                 array_push($errors,"Password does not match");
+            }
+
+            // Телефон: само цифри, интервал и -
+            if(!empty($phone) && !preg_match("/^[0-9\s\-]+$/", $phone)){
+                array_push($errors,"Phone number can only contain digits, spaces and dashes.");
             }
 
             require_once "database.php";
@@ -68,8 +89,9 @@
                 // mysqli_stmt_init(); initialises statement and returns object suitable for mysqli
                 // statement prepare so it returns an object and we can use that object in the mysql statement prepare function
                 // so lets store the object in a variable
-                $prepareStmt = mysqli_stmt_prepare($stmt, $sql);
-                if($prepareStmt){
+                // $prepareStmt = mysqli_stmt_prepare($stmt, $sql);
+                if(mysqli_stmt_prepare($stmt, $sql)){
+                    //we have 3 sss for the 3params name email pass
                     mysqli_stmt_bind_param($stmt,"sss",$fullName,$email,$passwordHash);
                     mysqli_stmt_execute($stmt);
                     echo "<div class='alert alert-success'>You are registered successfully!</div>";
